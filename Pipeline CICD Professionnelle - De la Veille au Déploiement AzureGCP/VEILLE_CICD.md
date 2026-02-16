@@ -83,28 +83,22 @@ uv utilise le fichier pyproject.toml pour gérer les dépendances et les configu
 
 Voici un exemple de structure de fichier pyproject.toml pour un projet utilisant uv :
 
-```toml         
-[project]
-name = "mon-projet"
+```toml[build-system]
+requires = ["uv"]
+build-backend = "uv.build_backend"                [project]
+name = "my_project"
 version = "0.1.0"
-description = "Un projet Python simple utilisant uv"
 dependencies = [
     "requests",
-    "numpy",
-]
-
-[build-system]
-requires = ["uv"]
-build-backend = "uv.build_backend"
-
-[tool.uv]
+    "numpy"
+]                [tool.uv]
 dev-dependencies = [
     "pytest",
-]
-scripts = {
-    "start": "python main.py",
-}
-```     
+    "black"
+]                [tool.uv.scripts]
+start = "python main.py"
+```
+
 Dans cet exemple, le fichier pyproject.toml définit les informations de base du projet, les dépendances nécessaires pour exécuter le projet, les dépendances de développement pour les tests, et un script pour démarrer l'application. uv utilise ces informations pour gérer les dépendances, exécuter les tests et construire le projet de manière efficace.
 
 ## Gestion des dépendances (séparé par sections)
@@ -120,42 +114,33 @@ Le build backend est une composante essentielle de la gestion de projet avec uv.
 
 Pour utiliser uv dans GitHub Actions, vous pouvez créer un workflow qui inclut les étapes nécessaires pour installer uv, configurer l'environnement de développement et exécuter les commandes uv pour gérer votre projet Python. Voici un exemple de workflow GitHub Actions qui utilise uv :
 
-```yamlname: CI/CD Pipeline
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]          jobs:
-  build:    
+```yamlname: CI
+on: [push, pull_request]
+jobs:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
+      - uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-
       - name: Install uv
         run: pip install uv
-
       - name: Install dependencies
         run: uv install
-
       - name: Run tests
         run: uv test
-
-      - name: Build project
-        run: uv build                                                                                                   - name: Deploy project                                                                                              run: uv deploy                                                                                                              ```
-Dans cet exemple, le workflow est déclenché à chaque push ou pull request sur la branche main. Le workflow inclut des étapes pour vérifier le code, configurer l'environnement Python, installer uv, installer les dépendances du projet, exécuter les tests, construire le projet et déployer l'application. En utilisant ce workflow, vous pouvez automatiser le processus de CI/CD pour votre projet Python en utilisant uv dans GitHub Actions.
+```
+Dans cet exemple, le workflow est déclenché à chaque push ou pull request. Il configure l'environnement de développement en installant Python, puis installe uv et les dépendances du projet en utilisant uv. Enfin, il exécute les tests définis dans le projet en utilisant la commande `uv test`. En utilisant ce workflow, vous pouvez automatiser le processus de gestion de votre projet Python avec uv dans GitHub Actions, ce qui facilite la collaboration et améliore l'efficacité du développement.
 
 ## Installation
 
 Pour installer uv, vous pouvez utiliser pip, le gestionnaire de packages Python. Voici la commande pour installer uv :
 
 ```bashpip install uv
-``` Cette commande installera uv et toutes ses dépendances nécessaires pour gérer vos projets Python. Une fois installé, vous pouvez utiliser les commandes uv pour gérer les dépendances, exécuter les tests, construire les packages et déployer vos applications Python de manière efficace.       
+```
+Cette commande installera uv et toutes ses dépendances nécessaires pour gérer vos projets Python. Une fois installé, vous pouvez utiliser les commandes uv pour gérer les dépendances, exécuter les tests, construire les packages et déployer vos applications Python de manière efficace.       
 
 ## Cache des dépendances
 
@@ -163,14 +148,19 @@ Pour optimiser les performances de votre pipeline CI/CD, vous pouvez utiliser le
 
 ```yaml - name: Cache dependencies
   uses: actions/cache@v2
-  with:
+  with: 
+    key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+    path: ~/.cache/uv
+```
+Dans cet exemple, le cache est configuré pour stocker les dépendances installées par uv dans le répertoire `~/.cache/uv`. La clé du cache est générée en fonction du système d'exploitation du runner et du contenu du fichier `uv.lock`, ce qui garantit que le cache est invalidé lorsque les dépendances changent. En utilisant le cache des dépendances, vous pouvez améliorer considérablement les performances de votre pipeline CI/CD en réduisant le temps nécessaire pour installer les dépendances à chaque exécution.
 
 ## Exécution de commandes
 
 uv permet d'exécuter des commandes Python directement depuis la ligne de commande. Par exemple, pour exécuter un script Python, vous pouvez utiliser la commande suivante :
 
 ```bashuv run python script.py
-``` Cette commande exécutera le script Python spécifié en utilisant l'environnement de développement géré par uv. Vous pouvez également utiliser uv pour exécuter des tests, construire des packages et déployer des applications, ce qui en fait un outil polyvalent pour la gestion de projets Python dans vos pipelines CI/CD.     
+``` 
+Cette commande exécutera le script Python spécifié en utilisant l'environnement de développement géré par uv. Vous pouvez également utiliser uv pour exécuter des tests, construire des packages et déployer des applications, ce qui en fait un outil polyvalent pour la gestion de projets Python dans vos pipelines CI/CD.     
 
 # **Qu'est-ce que le versionnage sémantique (SemVer) ?**
 
